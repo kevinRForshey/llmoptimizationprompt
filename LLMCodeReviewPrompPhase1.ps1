@@ -1,20 +1,20 @@
 # ============================================================================
-# gen-optimize-prompt.ps1
-# Generates an LLM prompt for code optimization tailored to your system specs
+# LLMCodeReviewPrompPhase1.ps1
+# Generates an LLM prompt for code review based on the file(s) passed in
 # ============================================================================
 #
 # SETUP:
-#   1. Save this file as "LLMCodeOptimizationGenerator.ps1" anywhere on your computer
+#   1. Save this file as "LLMCodeReviewPrompPhase1.ps1" anywhere on your computer
 #
 # HOW TO RUN:
 #   Option A - Without a code file (you'll paste code manually):
 #     Right-click the file > "Run with PowerShell"
 #     OR open PowerShell and run:
-#       .\LLMCodeOptimizationGenerator.ps1
+#       .\LLMCodeReviewPrompPhase1.ps1
 #
 #   Option B - With a code file (auto-injects your code):
 #     Open PowerShell and run:
-#       .\LLMCodeOptimizationGenerator.ps1 -CodeFile "C:\path\to\your\code.py"
+#       .\LLMCodeReviewPrompPhase1.ps1 -CodeFile "C:\path\to\your\code.py"
 #
 # IF YOU GET AN EXECUTION POLICY ERROR:
 #   Run this command first (only needed once):
@@ -36,17 +36,7 @@ Write-Host ""
 Write-Host "Gathering system information..." -ForegroundColor Cyan
 Write-Host ""
 
-# ---- System Specs ----
-$specs = (systeminfo | Select-String "OS Name|OS Version|Processor|Total Physical Memory|System Type") -join "`n"
 
-# ---- GPU Detection ----
-$gpu = ""
-try {
-    $gpuInfo = Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name
-    $gpu = ($gpuInfo -join "`n")
-} catch {
-    $gpu = "Unable to detect GPU"
-}
 
 # ---- Runtime Detection ----
 $runtimes = @()
@@ -104,30 +94,18 @@ if ($CodeFile -and (Test-Path $CodeFile)) {
 
 # ---- Build the Prompt ----
 $prompt = @"
-As a Senior Level Software Engineer, optimize the following code so that:
-1. No existing functionality is changed — inputs and outputs must remain identical
-2. It is optimized to run as fast as possible on the system described below
-3. All optimizations are documented with inline comments explaining WHY each change improves performance on this specific hardware
+As a Senior Level Software Engineer, review the following code with the requirements:
+1. If this is a python file, ensure it is in Pep8 or black format an follow these additional requirements:
+2. The code should be using "standard" design patterns when appropriate
+3. The code needs to use configuration to do configuration when appropriate.
+4. The code should be optimized to run extremely well on hardware with lower specs.
+5. The code cannot be wasting resources such as unnecessary disk or memor reads/writes etc.
+6. The code cannot contained any unused code.
+7. The code needs to be as "Pythonic" as possible.
+8. The code needs to be easy enough for my mom to read it.
+9. All recommended updates need to have a reasoning and explanation attached to it.
 
-<system_specs>
-$specs
-GPU: $gpu
-</system_specs>
 
-<installed_runtimes>
-$runtimesBlock
-</installed_runtimes>
-
-<optimization_priorities>
-- Leverage CPU architecture and instruction sets available on this processor
-- Optimize memory usage relative to available RAM
-- Use OS-specific performance APIs or features where applicable
-- Prefer algorithmic improvements over micro-optimizations
-- Identify and eliminate unnecessary allocations, redundant operations, or blocking calls
-- Consider parallelism and concurrency if the CPU supports multiple cores/threads
-- If a GPU is available and the workload suits it, suggest GPU acceleration options
-- Use runtime-specific optimizations relevant to the detected language and version
-</optimization_priorities>
 
 <output_format>
 - Provide the fully optimized code in a single code block
