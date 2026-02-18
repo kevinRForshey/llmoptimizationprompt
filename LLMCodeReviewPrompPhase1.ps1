@@ -93,7 +93,6 @@ if ($CodeFile -and (Test-Path $CodeFile)) {
 }
 
 # ---- Build the Prompt ----
-$prompt = @"
 As a Senior Level Software Engineer, review the following code with the requirements:
 1. If this is a python file, ensure it is in Pep8 or black format an follow these additional requirements:
 2. The code should be using "standard" design patterns when appropriate
@@ -104,6 +103,7 @@ As a Senior Level Software Engineer, review the following code with the requirem
 7. The code needs to be as "Pythonic" as possible.
 8. The code needs to be easy enough for my mom to read it.
 9. All recommended updates need to have a reasoning and explanation attached to it.
+10. If you have to create the configuration file, include that in your review.
 
 
 
